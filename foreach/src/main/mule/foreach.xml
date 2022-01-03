@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="60b70ef0-3607-43dd-8ed9-eb6be6edf593" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="foreachFlow" doc:id="84731a44-16b9-42cd-8727-dbc00420b896" >
+		<http:listener doc:name="Listener" doc:id="18d85e2e-c442-45c0-b95f-7b8de4bbd35a" config-ref="HTTP_Listener_config" path="/foreach"/>
+		<set-payload value='#[[1,2,"s",4,5]]' doc:name="Set Payload" doc:id="1d981e03-6cc7-49bf-a6f4-7c2f6f338667" />
+		<foreach doc:name="For Each" doc:id="7b33e651-6037-45e6-a440-a41ea09d7814" >
+			<set-payload value="#[payload]" doc:name="Set Payload" doc:id="cc92958e-726d-415d-8e82-c291844d8e6f" />
+		</foreach>
+		<ee:transform doc:name="Transform Message" doc:id="764f990e-4075-4d51-8bd9-10f49710d504" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-payload value="#[payload]" doc:name="Set Payload" doc:id="1dc44b73-4f9a-484b-8e35-d9490c68de94" />
+	</flow>
+</mule>

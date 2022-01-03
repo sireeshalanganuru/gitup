@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="8b58fdec-41fa-4b45-b5c0-210235f0ad91" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="39339fea-4d85-4085-a60e-ec84228b5240" >
+		<http:request-connection host="hgdtey" />
+	</http:request-config>
+	<http:request-config name="HTTP_Request_configuration1" doc:name="HTTP Request configuration" doc:id="cc96be05-1e39-42df-9a11-68687fe2ebc6" >
+		<http:request-connection host="gdhf" />
+	</http:request-config>
+	<http:request-config name="HTTP_Request_configuration2" doc:name="HTTP Request configuration" doc:id="37a010ad-2e3d-4373-a6be-2a879bf6c26a" >
+		<http:request-connection host="ghdyr" />
+	</http:request-config>
+	<flow name="test-2Flow" doc:id="a7f4da4c-535f-4816-b1e8-52ac7e9812ef" >
+		<http:listener doc:name="Listener" doc:id="377189d8-8b71-4cc8-9796-b32c7795f863" config-ref="HTTP_Listener_config" path="/test2">
+			<http:error-response >
+				<http:body ><![CDATA[#[payload]]]></http:body>
+			</http:error-response>
+		</http:listener>
+		<set-payload value='#["error handler"]' doc:name="Set Payload" doc:id="78288b46-8b15-47f0-8702-8e105bb1d579" />
+		<flow-ref doc:name="Flow Reference" doc:id="f5685958-4e3e-4d6d-aa62-fcb884e4269d" name="test-2Sub_Flow"/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="7a83d8a2-a419-4b58-825e-5f7a01a39af8" type="HTTP:CONNECTIVITY">
+				<ee:transform doc:name="Transform Message" doc:id="6a878871-619c-4b46-b7ef-4e61eed2920e" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"error handling"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<sub-flow name="test-2Sub_Flow" doc:id="f24fd6fb-9c0d-4e42-a11e-6f278c599819" >
+		<http:request method="GET" doc:name="Request" doc:id="64f299a2-5b50-4042-99c1-4648b61439d5" config-ref="HTTP_Request_configuration2" path="/user"/>
+	</sub-flow>
+</mule>

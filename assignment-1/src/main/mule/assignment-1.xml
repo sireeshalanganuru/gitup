@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="3dfe084d-83b7-4209-bc9c-18b124ecdb64" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="6f59db26-9c84-4ee1-95d9-0197e993cedc" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="root" />
+	</db:config>
+	<flow name="assignment-1Flow" doc:id="da627df1-031c-419f-8999-9e04ceee3cba" >
+		<http:listener doc:name="Listener" doc:id="b5ee35ac-19ff-4fef-bf6e-bcaf78af35c3" config-ref="HTTP_Listener_config" path="/select"/>
+		<db:select doc:name="Select" doc:id="d6c42416-07d6-43ec-b767-de1cfc9ed141" config-ref="Database_Config">
+			<db:sql ><![CDATA[SELECT * FROM learndb.account_details;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	
+	name:attributes.queryParams.name
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="830820ff-e2e7-4bd6-acbd-69cdf1002577" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="assignment-1Flow1" doc:id="9ea9a733-d760-4d31-97e5-b2e0868281c7" >
+		<http:listener doc:name="Listener" doc:id="229a216c-a28d-4c37-93fe-6546fe032f81" config-ref="HTTP_Listener_config" path="/insert"/>
+		<db:insert doc:name="Insert" doc:id="3b1d3ac8-f934-45be-8a6a-741067688888" config-ref="Database_Config">
+			<db:sql ><![CDATA[INSERT INTO learndb.account_details (account_no,account_name,mobile_no,address) VALUES (123578,'sravanthi',23457,'vizag')]]></db:sql>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="bca0a523-4784-4428-8574-48ebf525fead" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

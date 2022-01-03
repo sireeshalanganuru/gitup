@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="b5ab3660-334e-41d2-ae31-890241280a81" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<configuration doc:name="Configuration" doc:id="eabddf71-5517-42ba-b1fb-378dbede485d" defaultErrorHandler-ref="globalError_Handler" />
+	<flow name="test-4Flow" doc:id="aace9716-ee2d-4690-955e-56f7d43e6a29" >
+		<http:listener doc:name="Listener" doc:id="8d352755-759d-4357-b9bc-bb03c15a9dba" config-ref="HTTP_Listener_config" path="/test"/>
+		<set-payload value='#["error handling is being executed"]' doc:name="Set Payload" doc:id="22af68b3-c4d9-4329-ad69-8aac5ff3c6a2" />
+		<choice doc:name="Choice" doc:id="f0e92ebf-78a9-4b2d-bc90-b2036e388c9c" >
+			<when expression="#[isEmpty(payload)]">
+				<raise-error doc:name="Raise error" doc:id="8be5aac3-67e4-48ac-a5b6-4e85c308897f" type="NO:PAYLOAD" description="NOPAYLOADTODESCRIBE"/>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="1bec6369-a0de-48f1-9057-b0248c90b6c8" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>

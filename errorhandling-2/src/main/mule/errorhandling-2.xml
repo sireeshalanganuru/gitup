@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="5c864818-20a6-4ed9-a57c-361e440e721a" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="c75632c0-6a13-4be4-ac7d-eaece1d0b750" >
+		<http:request-connection host="gfdyuuu" />
+	</http:request-config>
+	<http:request-config name="HTTP_Request_configuration1" doc:name="HTTP Request configuration" doc:id="e01eb51f-4b3c-4941-8834-f691ff71bda1" >
+		<http:request-connection host="zsffgy" />
+	</http:request-config>
+	<flow name="errorhandling-2Flow" doc:id="dfeaf24d-4d38-4c83-9a48-6e1e68f1b53a" >
+		<http:listener doc:name="Listener" doc:id="f1774625-f1c0-4622-b02e-b4e38ea90b1e" config-ref="HTTP_Listener_config" path="/errorhandling">
+			<http:error-response >
+				<http:body ><![CDATA[#[payload]]]></http:body>
+			</http:error-response>
+		</http:listener>
+		<flow-ref doc:name="Flow Reference" doc:id="cb24f2f8-107c-475f-8210-464fcebdfeea" name="errorhandling-2Flow1"/>
+		<set-payload value='#["i am in main flow"]' doc:name="Set Payload" doc:id="cdc50943-e6d6-4b49-8a30-1fd0f8759335" />
+	</flow>
+	<flow name="errorhandling-2Flow1" doc:id="47c575ab-36ad-4b8e-9f2f-9b2afada37ad" >
+		<set-payload value='#["i am in private flow"]' doc:name="Set Payload" doc:id="e6e97937-1522-46db-851e-7b897abfa5fd" />
+		<http:request method="GET" doc:name="Request" doc:id="526bedbc-db0d-43c4-b8d7-e2316a71cffb" config-ref="HTTP_Request_configuration" path="/users"/>
+		<error-handler>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="a45d7b83-0612-4970-9e6b-ef5ea33b9703" type="HTTP:CONNECTIVITY">
+				<ee:transform doc:name="Transform Message" doc:id="dfb51362-35de-4153-a7a0-4ae9a674e932" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="errorhandling-2Flow2" doc:id="8a43382e-56fa-4919-9a79-f68a914f0833" >
+		<http:listener doc:name="Listener" doc:id="4d44ed71-ff36-49f3-9ebc-b66717f2940c" config-ref="HTTP_Listener_config" path="/propogate"/>
+		<flow-ref doc:name="Flow Reference" doc:id="6c299249-141c-4cff-b301-80833ba2fc67" name="errorhandling-2Flow3"/>
+		<set-payload value='#["error handling"]' doc:name="Set Payload" doc:id="915d03cd-6d10-44fd-83ef-116e3bcb41d6" />
+	</flow>
+	<flow name="errorhandling-2Flow3" doc:id="b62013a1-42bc-49fa-b368-e669c97bf4d4" >
+		<set-payload value='#["error default"]' doc:name="Set Payload" doc:id="979d6100-c1d6-4214-9114-cc7baa88c9e6" />
+		<http:request method="GET" doc:name="Request" doc:id="98c60e3f-e6b6-4bc1-b0c7-5c390ffd8d1f" config-ref="HTTP_Request_configuration1" path="/user"/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="8b551772-909d-4146-a839-363513680e90" type="HTTP:CONNECTIVITY">
+				<ee:transform doc:name="Transform Message" doc:id="d0c29afb-b0b7-4b40-adc0-613473922cc3" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>

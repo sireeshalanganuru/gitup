@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="cc305c12-870b-46b8-b44b-937233f438db" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<validation:config name="Validation_Config" doc:name="Validation Config" doc:id="15cd90f2-be96-4671-a814-d5f8d521b835" />
+	<configuration doc:name="Configuration" doc:id="5d8146f6-c462-45eb-9528-35b55c4c8aec" defaultErrorHandler-ref="globalError_Handler" />
+	<configuration doc:name="Configuration" doc:id="ec5d046f-6e87-4f40-839c-fb48693d5670" defaultErrorHandler-ref="globalError_Handler" />
+	<flow name="errorhandling3Flow" doc:id="a111c7aa-9cf0-4232-9871-89b609ebe4f2" >
+		<http:listener doc:name="Listener" doc:id="89a98f08-ec6e-4dea-889e-c3208b73992b" config-ref="HTTP_Listener_config" path="/error"/>
+		<set-payload value='#["Hello"]' doc:name="Set Payload" doc:id="838f7d10-8ded-4194-aa49-06fe08dabe11" />
+		<choice doc:name="Choice" doc:id="829ecc43-6e13-4597-90a1-7cc3ead489f0" >
+			<when expression="#[isEmpty(payload)]">
+				<raise-error doc:name="Raise error" doc:id="63e0dc33-e78e-4f8f-b8a3-ec27a37acb7f" type="NO:PAYLOAD" description="NOPAYLOADTODESCRIBE"/>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="3f02aac7-3181-46b7-83e9-096723b0e265" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="errorhandling3Flow1" doc:id="025982e8-e0ae-4f27-8188-81e1960bdc3e" >
+		<http:listener doc:name="Listener" doc:id="05a9e930-9bef-4af1-ad94-6e25614482e9" config-ref="HTTP_Listener_config" path="/flow"/>
+		<set-payload value='#[500]' doc:name="Set Payload" doc:id="177297be-d29b-4966-9f65-2e2ba5982be3" />
+		<validation:is-number doc:name="Is number" doc:id="7c2ef6ec-080f-4347-aa84-f6a0f348abc9" config-ref="Validation_Config" minValue="1000" maxValue="3000" numberType="INTEGER" value="#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="b3a1797f-132a-4e1e-92cc-b45876009ae4">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="errorhandling3Flow2" doc:id="419fcf92-ce8b-47b8-b194-8a041c95c964" >
+		<http:listener doc:name="Listener" doc:id="861b8a38-67c3-418c-951e-d1e94f5681c8" config-ref="HTTP_Listener_config" path="/path"/>
+		<choice doc:name="Choice" doc:id="c0921d96-11af-46be-8eb7-e5ec8c0187a2" >
+			<when expression="#[isEmpty(payload)]">
+				<raise-error doc:name="Raise error" doc:id="ff5abbec-4834-4929-b19f-23008d66b106" type="EMPTY:PAYLOAD" description="EMPTYPAYLOADDESCRIPTION"/>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="465af1c7-416b-4f08-bb9a-5d3d25d45211" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"error handled inside the description"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>
