@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="3237ba80-a486-472d-9bf2-527062ac972e" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="8d2ab99b-caa6-4f7f-a846-cd42b159606c" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="root" database="learndb" />
+	</db:config>
+	<flow name="batch-deleteFlow" doc:id="cab4c4e1-5229-4f4e-8df5-10bd3e695618" >
+		<http:listener doc:name="Listener" doc:id="15e16078-f5da-4dec-82c4-305e14e1dd6a" config-ref="HTTP_Listener_config" path="/batchdelete"/>
+		<logger level="INFO" doc:name="Logger" doc:id="0e831663-debe-4d8f-a977-733d960f1f72" message="#[payload]"/>
+		<batch:job jobName="batch-deleteBatch_Job" doc:id="2eac7c77-70f8-4cae-9f42-add47ba54ef5" >
+			<batch:process-records >
+				<batch:step name="Batch_Step" doc:id="f2524d3e-dc46-4dc6-bde4-95e4c06d6172" >
+					<db:delete doc:name="Delete" doc:id="c8ce26ba-d878-40aa-99dd-0b8953ee0735" config-ref="Database_Config">
+						<db:sql ><![CDATA[delete from account_details where account_name = 'sravanthi']]></db:sql>
+					</db:delete>
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="7129217b-e768-4f18-bf29-122857237bed" streaming="true">
+						<logger level="INFO" doc:name="Logger" doc:id="288fc0ed-f49b-4ffc-a5bd-2e0be03703eb" message="#[payload]"/>
+					</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<logger level="INFO" doc:name="Logger" doc:id="969fcdab-10e8-4b77-8396-57bd3ca41511" message="#[payload]"/>
+			</batch:on-complete>
+		</batch:job>
+		<ee:transform doc:name="Transform Message" doc:id="9fdaf9c5-d0ec-46e6-904c-f9b9148876bd" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
