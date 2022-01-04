@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="4c43f672-c75f-4865-a109-a222ef1739d1" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="9cace3a3-0797-4be4-bae8-c3658ac11398" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="root" database="learndb"/>
+	</db:config>
+	<flow name="batch-testFlow" doc:id="f592da4a-422a-4b3b-9b84-8cc29aec2e76" >
+		<http:listener doc:name="Listener" doc:id="cd0ead5b-7efe-4c29-8cf3-1aa7ce8c559b" config-ref="HTTP_Listener_config" path="/batch"/>
+		<logger level="INFO" doc:name="Logger" doc:id="faa8e182-3986-4185-9d2d-5f561da1f81e" message="#[payload]"/>
+		<batch:job jobName="batch-testBatch_Job" doc:id="cdfffc72-254b-458c-892b-d7806284da1a" >
+			<batch:process-records >
+				<batch:step name="Batch_Step1" doc:id="5ad88225-1b42-4192-b85c-de3389c40d81" >
+					<db:insert doc:name="Insert" doc:id="c26e34ba-5a8e-4d91-adea-3754ce7293fa" config-ref="Database_Config">
+			<db:sql><![CDATA[INSERT INTO learndb.account_details (account_no,account_name,mobile_no,address) VALUES (:account_no,:account_name,:mobile_no,:address)]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+	account_no: payload.account_no,
+	account_name: payload.account_name,
+	mobile_no: payload.mobile_no,
+    address: payload.address,
+}]]]></db:input-parameters>
+		</db:insert>
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="4fc5af92-d96e-466b-af0c-5dec18866769" streaming="true">
+						<logger level="INFO" doc:name="Logger" doc:id="5c841e68-1aae-473e-a14d-0251d493f016" message="#[payload]"/>
+					</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<logger level="INFO" doc:name="Logger" doc:id="6b22a682-6f1b-46f2-bd3a-90200abd3f4b" message="#[payload]"/>
+			</batch:on-complete>
+		</batch:job>
+		<ee:transform doc:name="Transform Message" doc:id="1fd09c54-07b4-437e-a963-4a1f17f8fc11">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+	</flow>
+</mule>
